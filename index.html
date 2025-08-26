@@ -6,11 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./style.css" />
     <title>graphDS</title>
-    <style></style>
   </head>
   <body>
-    <button>start</button>
-    <canvas id="canvas"></canvas>
-    <script type="module" src="./src/index.ts"></script>
+    <div class="container">
+      <div class="logo">
+        <p>graph-traverser</p>
+      </div>
+      <div class="selection">
+        <div>
+          <div class="dropbox">
+            <select id="algo" class="select-box">
+              <option value="bfs">Breadth-first search</option>
+              <option value="dfs">Depth-first search</option>
+              <option value="ucs-max">Uniform-cost search(Max-Heap)</option>
+              <option value="ucs-min">Uniform-cost search(Min-Heap)</option>
+              <option value="dfs">Depth-first search</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="dropbox">
+          <select id="graph" class="select-box">
+            <option value="regular">Regular</option>
+            <option value="maze">Maze</option>
+            <option value="weighted">Weighted</option>
+          </select>
+        </div>
+        <span>
+          <input id="cellWidth" class="input" type="text" value="20" />
+        </span>
+        <span>
+          <button id="regen" class="btn">Regenerate</button>
+        </span>
+        <span>
+          <button id="start" class="btn">Start</button>
+        </span>
+      </div>
+      <canvas id="canvas"></canvas>
+      <script type="module" src="./src/index.ts"></script>
+    </div>
   </body>
 </html>

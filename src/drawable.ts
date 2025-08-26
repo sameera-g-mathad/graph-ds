@@ -3,6 +3,8 @@ import type { shape, DrawableInterface } from './interface';
 // THis area is for drawing
 // canvas elements.
 
+// Each node in the graph/canvas
+// is a instance of Drawable object.
 export abstract class Drawable {
   protected ctx: CanvasRenderingContext2D;
   protected cellWidth: number;
@@ -23,6 +25,8 @@ export abstract class Drawable {
     this.stroked = drawable.stroked;
   }
 
+  // General method for drawing and displaying
+  // text on the screen.
   draw(color: string) {
     this.ctx.clearRect(this.x, this.y, this.cellWidth, this.cellWidth);
     this.ctx.beginPath();
@@ -34,10 +38,16 @@ export abstract class Drawable {
     this.ctx.closePath();
   }
 
+  // Abstract method to be implemented by
+  // subclasses. Either a square or a circle is
+  // displayed painted on the screen.
   protected abstract shape(): void;
 
+  // abstract as of now.
   abstract update(color: string): void;
 
+  // Fills the text on the center of the
+  // object.
   public fillText(): void {
     this.ctx.font = 'sans-serif';
     this.ctx.fillStyle = 'white';
@@ -50,6 +60,9 @@ export abstract class Drawable {
     );
   }
 
+  // Factory method(like) to return a instance of
+  // Drawable back. Static method returns either
+  // Circle or Square instances.
   public static requestShape(drawable: DrawableInterface, shape: shape) {
     switch (shape) {
       case 'circle':
@@ -63,6 +76,8 @@ export abstract class Drawable {
   }
 }
 
+// Square is used to paint squares
+// on the screen.
 class Square extends Drawable {
   constructor(drawable: DrawableInterface) {
     super(drawable);
@@ -77,6 +92,8 @@ class Square extends Drawable {
   }
 }
 
+// Circle is used to paint circles
+// on the screen.
 class Circle extends Drawable {
   constructor(drawable: DrawableInterface) {
     super(drawable);

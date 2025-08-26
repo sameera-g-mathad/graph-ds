@@ -1,8 +1,10 @@
 import { Storage } from './storage';
 import { Drawable } from './drawable';
+import type { algo } from './interface';
+
 // Graph implemented here will be for canvas api and uses requireAnimationFrame
 // as a source for recursion.
-
+// 'Bfs', 'Dfs', 'Ucs' supported.
 export abstract class Traversal {
   protected st!: Storage<any>;
   protected directions = [
@@ -13,37 +15,61 @@ export abstract class Traversal {
   ];
 
   constructor() {}
-  static getTraversal(type: 'bfs' | 'dfs' | 'ucs') {
+
+  // Factory Method(like) method to return
+  // new instance of evertime.
+  static getTraversal(type: algo) {
     switch (type) {
       case 'bfs':
         return new BFS();
       case 'dfs':
         return new DFS();
-      case 'ucs':
-        return new UCS();
+      case 'ucs-min':
+        return new UCSMin();
+      case 'ucs-max':
+        return new UCSMax();
+      default:
+        return new BFS();
     }
   }
+  // Method to compute running cost. Useful in Ucs as it uses
+  // priority queue.
+  computeCost(runningCost: number, newNodeCost: number): number {
+    return runningCost + newNodeCost;
+  }
 
+  // This method carves the path needed to follow
+  // from source and destination. This is called once
+  // all the required nodes are visited and a destination is
+  // found.
+  // This is done by using the parent node of every node and
+  // once the destination is encountered, the path can be traversed
+  // back to find the souce using parent of each node starting
+  // from the destination.
   carvePath(
     graph: Drawable[][],
     source: [number, number],
     destination: [number, number]
   ): void {
-    let i = destination[0],
-      j = destination[1];
+    let [i, j] = graph[destination[0]][destination[1]].parent;
+
     const carve = () => {
       if (i == source[0] && j == source[1]) {
-        graph[i][j].update('yellow');
+        graph[i][j].update('green');
         return;
       }
       graph[i][j].update('yellow');
-      i = graph[i][j].parent[0];
-      j = graph[i][j].parent[1];
+      const [parentI, parentJ] = graph[i][j].parent;
+      i = parentI;
+      j = parentJ;
       requestAnimationFrame(carve);
     };
     carve();
   }
 
+  // A generic method to perform 'bfs', 'dfs', 'ucs'.
+  // Only change is the use of storage instance, that is
+  // set to [dfs -> 'stack', bfs -> 'queue', ucs -> 'priority queue']
   traverse(
     graph: Drawable[][],
     source: [number, number],
@@ -51,27 +77,47 @@ export abstract class Traversal {
   ): void {
     const rows = graph.length;
     const cols = graph[0].length;
+
+    // push the source into storage.
     this.st.push([graph[source[0]][source[1]].value, ...source]);
+
+    // parent of the source is source itself.
     graph[source[0]][source[1]].parent = source;
+
+    // Inner method run recursively to paint
+    // visited nodes along the way.
     const start = () => {
+      // Once the storage becomes empty,
+      // stop traversal.
       if (this.st.isEmpty()) {
         return;
       }
-      const [_, row, col] = this.st.pop();
 
+      // pop the node from the storage.
+      const [cost, row, col] = this.st.pop();
+
+      // If the node is visited, continue with the next
+      // node in the storage.
       if (graph[row][col].visited) {
         requestAnimationFrame(start);
         return;
       }
-      graph[row][col].visited = true;
-      graph[row][col].update('blue');
 
+      // Mark the node as visited.
+      graph[row][col].visited = true;
+
+      // If the node is destination, then stop
+      // traversal and carve a path back.
       if (row == destination[0] && col == destination[1]) {
         this.st.clear();
         this.carvePath(graph, source, destination);
         return;
       }
 
+      // Color the visited node.
+      graph[row][col].update('blue');
+
+      // Explore the neigbors.
       for (let [dr, dc] of this.directions) {
         let drow = row + dr;
         let dcol = col + dc;
@@ -82,16 +128,24 @@ export abstract class Traversal {
           dcol < cols &&
           !graph[drow][dcol].visited
         ) {
+          // Store the parent used for carving path
+          // after destination is found.
           graph[drow][dcol].parent = [row, col];
-          this.st.push([graph[drow][dcol].value, drow, dcol]);
+          this.st.push([
+            this.computeCost(cost, graph[drow][dcol].value),
+            drow,
+            dcol,
+          ]);
         }
       }
       requestAnimationFrame(start);
     };
+    // start of the traversal
     start();
   }
 }
 
+// Breadth-first Search uses queue Data-structure.
 class BFS extends Traversal {
   constructor() {
     super();
@@ -99,6 +153,7 @@ class BFS extends Traversal {
   }
 }
 
+// Depth-first Search uses stack Data-structure.
 class DFS extends Traversal {
   constructor() {
     super();
@@ -107,9 +162,24 @@ class DFS extends Traversal {
   }
 }
 
-class UCS extends Traversal {
+// Uniform-cost Search uses heap Data-structure.
+// This implementation of ucs uses Max Heap.
+// Not sure if this is actually valid in search
+// problems.
+class UCSMax extends Traversal {
   constructor() {
     super();
     this.st = Storage.getStorage<[Number, Number, Number]>('maxTupleHeap');
+  }
+}
+
+// Uniform-cost Search uses heap Data-structure.
+// This implementation of ucs uses min Heap.
+// Somewhat sure, this is actually valid in search
+// problems.
+class UCSMin extends Traversal {
+  constructor() {
+    super();
+    this.st = Storage.getStorage<[Number, Number, Number]>('minTupleHeap');
   }
 }
