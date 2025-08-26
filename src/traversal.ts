@@ -1,3 +1,4 @@
+import { App } from './app';
 import { Storage } from './storage';
 import { Drawable } from './drawable';
 import type { algo } from './interface';
@@ -7,6 +8,7 @@ import type { algo } from './interface';
 // 'Bfs', 'Dfs', 'Ucs' supported.
 export abstract class Traversal {
   protected st!: Storage<any>;
+  private app: App = App.getInstance();
   protected directions = [
     [-1, 0],
     [1, 0],
@@ -20,6 +22,8 @@ export abstract class Traversal {
   // new instance of evertime.
   static getTraversal(type: algo) {
     switch (type) {
+      case 'a*':
+        return new AStar();
       case 'bfs':
         return new BFS();
       case 'dfs':
@@ -33,8 +37,14 @@ export abstract class Traversal {
     }
   }
   // Method to compute running cost. Useful in Ucs as it uses
-  // priority queue.
-  computeCost(runningCost: number, newNodeCost: number): number {
+  // priority queue. Cordinates are added to compute the distance
+  // that is useful in A* algorithm.
+  computeCost(
+    runningCost: number,
+    newNodeCost: number,
+    presentCords: [number, number],
+    destination: [number, number]
+  ): number {
     return runningCost + newNodeCost;
   }
 
@@ -55,10 +65,10 @@ export abstract class Traversal {
 
     const carve = () => {
       if (i == source[0] && j == source[1]) {
-        graph[i][j].update('green');
         return;
       }
-      graph[i][j].update('yellow');
+      graph[i][j].stroked = false;
+      graph[i][j].update(this.app.colorObj['path'], this.app.colorObj['text']);
       const [parentI, parentJ] = graph[i][j].parent;
       i = parentI;
       j = parentJ;
@@ -114,8 +124,13 @@ export abstract class Traversal {
         return;
       }
 
-      // Color the visited node.
-      graph[row][col].update('blue');
+      // Color the visited node, except the source.
+      if (!(row === source[0] && col === source[1])) {
+        graph[row][col].update(
+          this.app.colorObj['visited'],
+          this.app.colorObj['text']
+        );
+      }
 
       // Explore the neigbors.
       for (let [dr, dc] of this.directions) {
@@ -132,7 +147,12 @@ export abstract class Traversal {
           // after destination is found.
           graph[drow][dcol].parent = [row, col];
           this.st.push([
-            this.computeCost(cost, graph[drow][dcol].value),
+            this.computeCost(
+              cost,
+              graph[drow][dcol].value,
+              [drow, dcol],
+              destination
+            ),
             drow,
             dcol,
           ]);
@@ -158,7 +178,6 @@ class DFS extends Traversal {
   constructor() {
     super();
     this.st = Storage.getStorage<[Number, Number, Number]>('stack');
-    console.log(this.st.toString());
   }
 }
 
@@ -181,5 +200,28 @@ class UCSMin extends Traversal {
   constructor() {
     super();
     this.st = Storage.getStorage<[Number, Number, Number]>('minTupleHeap');
+  }
+}
+
+// a* is a heuristic algorithm, It works
+// like the ucs itself using a min heap
+// for traversal, but also considers the
+// distance between node A and B.
+class AStar extends Traversal {
+  constructor() {
+    super();
+    this.st = Storage.getStorage<[Number, Number, Number]>('minTupleHeap');
+  }
+  computeCost(
+    runningCost: number,
+    newNodeCost: number,
+    presentCords: [number, number],
+    destination: [number, number]
+  ): number {
+    const [x1, y1] = presentCords;
+    const [x2, y2] = destination;
+    // const distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    const distance = Math.abs(x1 - x2) + Math.abs(y1 - y2); // Manhattan distance.
+    return runningCost + newNodeCost + distance;
   }
 }

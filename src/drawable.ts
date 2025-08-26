@@ -10,6 +10,7 @@ export abstract class Drawable {
   protected cellWidth: number;
   public visited = false;
   public stroked: boolean = true;
+  public text: boolean = true;
   public value: number;
   public x: number;
   public y: number;
@@ -23,18 +24,20 @@ export abstract class Drawable {
     this.y = drawable.y;
     this.visited = drawable.visited;
     this.stroked = drawable.stroked;
+    this.text = drawable.text;
   }
 
   // General method for drawing and displaying
   // text on the screen.
-  draw(color: string) {
+  draw(nodeColor: string, textColor: string) {
     this.ctx.clearRect(this.x, this.y, this.cellWidth, this.cellWidth);
     this.ctx.beginPath();
-    this.ctx.fillStyle = color;
+    this.ctx.fillStyle = nodeColor;
     this.shape();
+    this.ctx.strokeStyle = '#b6b2b2ff';
     this.stroked && this.ctx.stroke();
     this.ctx.fill();
-    this.fillText();
+    this.fillText(textColor);
     this.ctx.closePath();
   }
 
@@ -44,20 +47,21 @@ export abstract class Drawable {
   protected abstract shape(): void;
 
   // abstract as of now.
-  abstract update(color: string): void;
+  abstract update(nodeColor: string, textColor: string): void;
 
   // Fills the text on the center of the
   // object.
-  public fillText(): void {
-    this.ctx.font = 'sans-serif';
-    this.ctx.fillStyle = 'white';
+  public fillText(textColor: string): void {
+    this.ctx.font = 'arial';
+    this.ctx.fillStyle = textColor;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText(
-      `${this.value}`,
-      this.x + this.cellWidth / 2,
-      this.y + this.cellWidth / 2
-    );
+    if (this.text)
+      this.ctx.fillText(
+        `${this.value}`,
+        this.x + this.cellWidth / 2,
+        this.y + this.cellWidth / 2
+      );
   }
 
   // Factory method(like) to return a instance of
@@ -87,8 +91,8 @@ class Square extends Drawable {
     this.ctx.rect(this.x, this.y, this.cellWidth, this.cellWidth);
   }
 
-  update(color: string) {
-    this.draw(color);
+  update(nodeColor: string, textColor: string) {
+    this.draw(nodeColor, textColor);
   }
 }
 
@@ -109,7 +113,7 @@ class Circle extends Drawable {
     );
   }
 
-  update(color: string) {
-    this.draw(color);
+  update(nodeColor: string, textColor: string) {
+    this.draw(nodeColor, textColor);
   }
 }

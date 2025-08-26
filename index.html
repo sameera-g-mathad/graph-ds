@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./style.css" />
-    <title>graphDS</title>
+    <title>graph-traverser</title>
   </head>
-  <body>
+  <body id="body">
     <div class="container">
       <div class="logo">
-        <p>graph-traverser</p>
+        <img class="img" alt="logo" src="/logo.png" />
       </div>
+      <div>
       <div class="selection">
         <div>
           <div class="dropbox">
@@ -20,7 +22,7 @@
               <option value="dfs">Depth-first search</option>
               <option value="ucs-max">Uniform-cost search(Max-Heap)</option>
               <option value="ucs-min">Uniform-cost search(Min-Heap)</option>
-              <option value="dfs">Depth-first search</option>
+              <option value="a*">A*(star) search</option>
             </select>
           </div>
         </div>
@@ -32,14 +34,25 @@
             <option value="weighted">Weighted</option>
           </select>
         </div>
+        <div class="dropbox">
+          <select id="shape" class="select-box">
+            <option value="square">Square</option>
+            <option value="circle">Circle</option>
+          </select>
+        </div>
         <span>
-          <input id="cellWidth" class="input" type="text" value="20" />
+          <input id="cellWidth" class="input" type="text" value="30" />
         </span>
         <span>
           <button id="regen" class="btn">Regenerate</button>
         </span>
         <span>
           <button id="start" class="btn">Start</button>
+        </span>
+        <span>
+          <a target="_blank" href="https://github.com/sameera-g-mathad/graph-traverser"
+          ><img class="github" alt="logo" src="/github.svg"
+        /></a>
         </span>
       </div>
       <canvas id="canvas"></canvas>

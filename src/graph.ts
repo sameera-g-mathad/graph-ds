@@ -17,7 +17,8 @@ export abstract class Graph {
   constructor(
     gridShape: shape = 'square',
     visited: boolean = false,
-    stroked: boolean = true
+    stroked: boolean = true,
+    text: boolean = true
   ) {
     // Get the singleton app instance.
     this.app = App.getInstance();
@@ -42,6 +43,7 @@ export abstract class Graph {
             value: this.fillValue(),
             visited: visited,
             stroked: stroked,
+            text,
           },
           gridShape
         )
@@ -52,7 +54,6 @@ export abstract class Graph {
   // This method is used to display the
   // graph on the screen.
   display() {
-    const color = this.app.getColor();
     let i = 0;
     // This is a recusive(I think) method,
     // that uses setTimeout to simulate animation
@@ -60,7 +61,10 @@ export abstract class Graph {
     const animate = () => {
       if (i >= this.rows) return;
       for (let j = 0; j < this.cols; j++) {
-        this.graph[i][j].update(color);
+        this.graph[i][j].update(
+          this.app.colorObj['nodeColor'],
+          this.app.colorObj['text']
+        );
       }
       i += 1;
       setTimeout(animate, 20);
@@ -78,15 +82,16 @@ export abstract class Graph {
   // create a instance of either 'square' or 'circle'
   // to be displayed on the graph.
   static requestGraph(type: graphFlavor) {
+    const app = App.getInstance();
     switch (type) {
       case 'regular':
-        return new RegularGraph('square');
+        return new RegularGraph(app.getShape());
       case 'maze':
-        return new Maze('square');
+        return new Maze(app.getShape());
       case 'weighted':
-        return new WeightedGraph('square');
+        return new WeightedGraph(app.getShape());
       default:
-        return new WeightedGraph('square');
+        return new WeightedGraph(app.getShape());
     }
   }
 
@@ -113,13 +118,13 @@ export abstract class Graph {
   // Sets the graph source and colors it.
   public graphSource(row: number, col: number) {
     this.source = [row, col];
-    this.graph[row][col].update('green');
+    this.graph[row][col].update(this.app.colorObj['source'], 'white');
   }
 
   // Sets the graph destination and colors it.
   public graphDestination(row: number, col: number) {
     this.destination = [row, col];
-    this.graph[row][col].update('red');
+    this.graph[row][col].update(this.app.colorObj['destination'], 'white');
   }
 
   // Clears both source and destination
@@ -128,11 +133,16 @@ export abstract class Graph {
   // select and change their initial selection.
   public clearSrcAndDest() {
     if (this.source && this.destination) {
-      const color = this.app.getColor();
       const [src_row, src_col] = this.source;
-      this.graph[src_row][src_col].update(color);
+      this.graph[src_row][src_col].update(
+        this.app.colorObj['nodeColor'],
+        this.app.colorObj['text']
+      );
       const [dest_row, dest_col] = this.destination;
-      this.graph[dest_row][dest_col].update(color);
+      this.graph[dest_row][dest_col].update(
+        this.app.colorObj['nodeColor'],
+        this.app.colorObj['text']
+      );
     }
 
     this.source = null;
@@ -186,7 +196,7 @@ class WeightedGraph extends Graph {
 //  Check out generateMaze() method below.
 class Maze extends Graph {
   constructor(gridShape: shape) {
-    super(gridShape, true, false);
+    super(gridShape, true, false, false);
     this.generateMaze(); // creates maze.
     this.display(); // display newly generated maze.
   }
@@ -195,16 +205,21 @@ class Maze extends Graph {
   // display method, as the graph should
   // be displayed after a maze is formed.
   display(): void {
-    const color = this.app.getColor();
     let i = 0;
     const animate = () => {
       if (i >= this.rows) return;
       for (let j = 0; j < this.cols; j++) {
         if (this.graph[i][j].value == 0) {
-          this.graph[i][j].update('white');
+          this.graph[i][j].update(
+            this.app.colorObj['nodeColor'],
+            this.app.colorObj['text']
+          );
           continue;
         }
-        this.graph[i][j].update(color);
+        this.graph[i][j].update(
+          this.app.colorObj['text'],
+          this.app.colorObj['text']
+        );
       }
       i += 1;
       setTimeout(animate, 20);
@@ -234,7 +249,10 @@ class Maze extends Graph {
     // it.
     const markVisited = (row: number, col: number) => {
       this.graph[row][col].value = 0;
-      this.graph[row][col].update('white');
+      this.graph[row][col].update(
+        this.app.colorObj['destination'],
+        this.app.colorObj['text']
+      );
       // Important. This makes the white path,
       // traversable and all the walls blocked.
       this.graph[row][col].visited = false;

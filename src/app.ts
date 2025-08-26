@@ -1,4 +1,4 @@
-import type { algo } from './interface';
+import type { algo, shape, styleType } from './interface';
 
 // Singleton
 export class App {
@@ -10,9 +10,9 @@ export class App {
   private cellWidth!: number;
   private rows!: number;
   private cols!: number;
-  private color!: string;
   private algo!: algo;
-
+  private shape!: shape;
+  public colorObj!: { [key in styleType]: string };
   private constructor() {
     // Set the canvas and context of the app/canvas
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -56,14 +56,6 @@ export class App {
     return this.cols;
   }
 
-  // Getter to return the color of the graph.
-  getColor(): string {
-    if (!this.color) {
-      this.color = 'rgba(28, 110, 164,0.6)';
-    }
-    return this.color;
-  }
-
   // Getter to return the context,
   // used by canvas objects to effectively
   // utilize canvas api.
@@ -76,6 +68,11 @@ export class App {
     return this.rows;
   }
 
+  // Getter to return the shape of node.
+  getShape(): shape {
+    return this.shape;
+  }
+
   // Setter to set the user selected
   // algorithm.
   setAlgo(type: algo): void {
@@ -86,10 +83,13 @@ export class App {
   // of the canvas object.
   setCellWidth(width: number) {
     if (width < 15) this.cellWidth = 15;
-    else if (width > 30) this.cellWidth = 30;
+    else if (width > 40) this.cellWidth = 40;
     else this.cellWidth = width;
   }
 
+  setColor(obj: { [key in styleType]: string }) {
+    this.colorObj = obj;
+  }
   // To set the dimenisions of the canvas.
   // Works well with the resize of the window as well.
   setDimensions = () => {
@@ -98,4 +98,10 @@ export class App {
     this.rows = Math.floor(this.canvas.height / this.cellWidth);
     this.cols = Math.floor(this.canvas.width / this.cellWidth);
   };
+
+  // Sets the shape of each node to either 'circle'
+  // or 'square'
+  setShape(shape: shape): void {
+    this.shape = shape;
+  }
 }
