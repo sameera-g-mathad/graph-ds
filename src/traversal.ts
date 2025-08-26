@@ -42,8 +42,8 @@ export abstract class Traversal {
   computeCost(
     runningCost: number,
     newNodeCost: number,
-    presentCords: [number, number],
-    destination: [number, number]
+    _presentCords: [number, number],
+    _destination: [number, number]
   ): number {
     return runningCost + newNodeCost;
   }
