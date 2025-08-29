@@ -13,14 +13,17 @@ export abstract class Graph {
   protected rows: number;
   private source: [number, number] | null = null;
   private destination: [number, number] | null = null;
+  public graphType!: graphFlavor;
 
   constructor(
     gridShape: shape = 'square',
     visited: boolean = false,
     stroked: boolean = true,
-    text: boolean = true
+    text: boolean = true,
+    graphType: graphFlavor = 'regular'
   ) {
     // Get the singleton app instance.
+    this.graphType = graphType;
     this.app = App.getInstance();
     this.rows = this.app.getRows();
     this.cols = this.app.getCols();
@@ -149,6 +152,19 @@ export abstract class Graph {
     this.destination = null;
   }
 
+  // This method is used to add walls in case of 'regular' and
+  // 'weighted' graphs. This works when user clicks and drags
+  // around the graph to form walls.
+  public blockNode(row: number, col: number): void {
+    if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
+      this.graph[row][col].visited = true;
+      this.graph[row][col].update(
+        this.app.colorObj['bg'],
+        this.app.colorObj['bg']
+      );
+    }
+  }
+
   // The main method used for graph traversal.
   public traverse(): void {
     // gerTraversal returns a new instance everytime
@@ -180,6 +196,7 @@ class RegularGraph extends Graph {
 class WeightedGraph extends Graph {
   constructor(gridShape: shape) {
     super(gridShape);
+    this.graphType = 'weighted';
     this.display();
   }
   fillValue(): number {
@@ -197,6 +214,7 @@ class WeightedGraph extends Graph {
 class Maze extends Graph {
   constructor(gridShape: shape) {
     super(gridShape, true, false, false);
+    this.graphType = 'maze';
     this.generateMaze(); // creates maze.
     this.display(); // display newly generated maze.
   }
